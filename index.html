@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wöchentlicher Keto-Ernährungsplan</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --light-bg: #fefbf7;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #fff;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .day-button {
+            background-color: var(--secondary-color);
+            color: var(--light-text);
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 4px;
+        }
+        .day-button:hover, .day-button.active {
+            background-color: var(--accent-color);
+        }
+        .meal-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .meal-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: calc(33.33% - 20px);
+        }
+        .meal-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .meal-content {
+            padding: 20px;
+        }
+        .meal-title {
+            font-size: 1.2em;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        .macro-nutrients {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .macro-nutrient {
+            text-align: center;
+        }
+        .macro-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .ingredients-list, .instructions-list {
+            padding-left: 20px;
+        }
+        .ingredients-list li, .instructions-list li {
+            margin-bottom: 5px;
+        }
+        .toggle-details {
+            background-color: var(--secondary-color);
+            color: var(--light-text);
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.3s;
+            border-radius: 4px;
+        }
+        .toggle-details:hover {
+            background-color: var(--accent-color);
+        }
+        .meal-details {
+            display: none;
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            .meal-card {
+                width: 100%;
+            }
+            .week-navigation {
+                flex-wrap: wrap;
+            }
+            .day-button {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wöchentlicher Keto-Ernährungsplan</h1>
+        <div class="week-navigation">
+            <button class="day-button" data-day="Montag">Montag</button>
+            <button class="day-button" data-day="Dienstag">Dienstag</button>
+            <button class="day-button" data-day="Mittwoch">Mittwoch</button>
+            <button class="day-button" data-day="Donnerstag">Donnerstag</button>
+            <button class="day-button" data-day="Freitag">Freitag</button>
+            <button class="day-button" data-day="Samstag">Samstag</button>
+            <button class="day-button" data-day="Sonntag">Sonntag</button>
+        </div>
+        <div class="meal-container" id="meal-container">
+            <!-- Meal cards will be injected here -->
+        </div>
+    </div>
+    <script>
+        const mealData = {
+            "Montag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F7731aca3-7eea-49ef-bc6a-c0945cd336e3.png?alt=media&token=7731aca3-7eea-49ef-bc6a-c0945cd336e3",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 144, "Menge": "200g", "Zutat": "Tofu" },
+                        { "Kalorien": 120, "Menge": "1 EL", "Zutat": "Öl" },
+                        { "Kalorien": 24, "Menge": "1 Paprika", "Zutat": "Paprika" },
+                        { "Kalorien": 44, "Menge": "1 Zwiebel", "Zutat": "Zwiebel" },
+                        { "Kalorien": 50, "Menge": "2 Karotten", "Zutat": "Karotten" },
+                        { "Kalorien": 8, "Menge": "1 EL", "Zutat": "Sojasauce" },
+                        { "Kalorien": 6, "Menge": "1 TL", "Zutat": "Ingwer" },
+                        { "Kalorien": 5, "Menge": "1 TL", "Zutat": "Knoblauchpulver" },
+                        { "Kalorien": 70, "Menge": "1/4 Tasse", "Zutat": "Kichererbsenmehl" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Schwarzes Salz (Kala Namak)" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Kurkuma" },
+                        { "Kalorien": 0, "Menge": "2 EL", "Zutat": "Wasser" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Stücke und gib sie in einen Mixer. Zerkleinere den Blumenkohl, bis er die Konsistenz von Reis hat.",
+                        "Erhitze etwas Öl in einer Pfanne und brate den gewürfelten Tofu knusprig an.",
+                        "Schiebe den gebratenen Tofu zur Seite und gib den Blumenkohlreis in die Pfanne. Brate ihn für einige Minuten, bis er weich ist.",
+                        "Füge gehacktes Gemüse wie Paprika, Zwiebeln und Karotten hinzu und brate sie mit dem Blumenkohlreis.",
+                        "Würze das Gericht mit Sojasauce, Ingwer und Knoblauchpulver nach Geschmack.",
+                        "In einer kleinen Schüssel Kichererbsenmehl, Wasser, Schwarzes Salz und Kurkuma mischen, bis eine glatte Masse entsteht.",
+                        "Schiebe alles in der Pfanne zur Seite und gieße die Kichererbsenmehl-Mischung in die leere Seite. Rühre um, bis es gekocht ist, und mische es dann mit dem restlichen Gemüse und Tofu.",
+                        "Schmecke den Blumenkohlreis mit gebratenem Tofu ab und füge bei Bedarf weitere Gewürze hinzu.",
+                        "Serviere den Keto Blumenkohlreis mit gebratenem Tofu heiß und genieße dein köstliches, gesundes Gericht!"
+                    ],
+                    "macroNutrients": { "fett": 25, "kohlenhydrate": 30, "proteine": 50 },
+                    "mealName": "Keto Blumenkohlreis mit gebratenem Tofu"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F9197f8de-68e7-44b2-ba14-a2c400496274.png?alt=media&token=9197f8de-68e7-44b2-ba14-a2c400496274",
+                    "ingredients": [
+                        { "Kalorien": 55, "Menge": "1", "Zutat": "Brokkoli" },
+                        { "Kalorien": 119, "Menge": "1 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 8, "Menge": "2", "Zutat": "Knoblauchzehen" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Pfeffer" },
+                        { "Kalorien": 320, "Menge": "200g", "Zutat": "Tempeh" },
+                        { "Kalorien": 17, "Menge": "1", "Zutat": "Zitrone" }
+                    ],
+                    "instructions": [
+                        "Heize den Ofen auf 200 Grad Celsius vor und lege ein Backblech mit Backpapier aus.",
+                        "Schneide den Brokkoli in kleine Röschen und lege sie auf das vorbereitete Backblech.",
+                        "Beträufle den Brokkoli mit Olivenöl und streue gehackten Knoblauch darüber.",
+                        "Würze den Brokkoli mit Salz und Pfeffer nach Geschmack.",
+                        "Backe den Brokkoli im vorgeheizten Ofen für 20-25 Minuten oder bis er goldbraun und knusprig ist.",
+                        "Während der Brokkoli backt, bereite den Zitronen-Tempeh zu, indem du den Tempeh in Scheiben schneidest und in einer Pfanne anbrätst.",
+                        "Gib den Saft einer Zitrone über den angebratenen Tempeh und lasse ihn kurz köcheln, bis die Flüssigkeit reduziert ist.",
+                        "Serviere den gebackenen Brokkoli mit dem Zitronen-Tempeh und genieße das köstliche Gericht!"
+                    ],
+                    "macroNutrients": { "fett": 20, "kohlenhydrate": 15, "proteine": 25 },
+                    "mealName": "Gebackener Brokkoli mit Knoblauch und Zitronen-Tempeh"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F86b95cf9-4d9e-4dc9-a9bc-19fa2db8d02b.png?alt=media&token=86b95cf9-4d9e-4dc9-a9bc-19fa2db8d02b",
+                    "ingredients": [
+                        { "Kalorien": 862, "Menge": "etwas", "Zutat": "Kokosöl" },
+                        { "Kalorien": 50, "Menge": "1", "Zutat": "Gemüse (z.B. Paprika, Zucchini, Brokkoli)" },
+                        { "Kalorien": 654, "Menge": "etwas", "Zutat": "geröstete Walnüsse" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Pfeffer" }
+                    ],
+                    "instructions": [
+                        "Heize eine Pfanne bei mittlerer Hitze vor und gib etwas Kokosöl hinzu.",
+                        "Schneide das Gemüse deiner Wahl (z.B. Paprika, Zucchini, Brokkoli) in mundgerechte Stücke.",
+                        "Brate das geschnittene Gemüse in der Pfanne an, bis es leicht gebräunt ist.",
+                        "Füge geröstete Walnüsse hinzu und brate sie kurz mit dem Gemüse an.",
+                        "Würze die Gemüsepfanne mit Salz, Pfeffer und anderen Gewürzen nach Geschmack.",
+                        "Rühre alles gut um und lasse die Gemüsepfanne noch einige Minuten köcheln, bis das Gemüse die gewünschte Konsistenz erreicht hat.",
+                        "Richte die Keto Gemüsepfanne mit gerösteten Walnüssen auf Tellern an und garniere sie nach Belieben.",
+                        "Genieße deine köstliche Keto Gemüsepfanne mit gerösteten Walnüssen!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 50, "proteine": 10 },
+                    "mealName": "Keto Gemüsepfanne mit gerösteten Walnüssen"
+                }
+            },
+            "Dienstag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F2d47055e-1c3a-4b06-893a-0a78acb645f7.png?alt=media&token=2d47055e-1c3a-4b06-893a-0a78acb645f7",
+                    "ingredients": [
+                        { "Kalorien": 33, "Menge": "1", "Zutat": "Zucchini" },
+                        { "Kalorien": 119, "Menge": "1 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 196, "Menge": "30g", "Zutat": "Sonnenblumenkerne" },
+                        { "Kalorien": 22, "Menge": "1 Bund", "Zutat": "frischer Basilikum" },
+                        { "Kalorien": 8, "Menge": "2", "Zutat": "Knoblauchzehen" },
+                        { "Kalorien": 12, "Menge": "1", "Zutat": "Zitrone (Saft)" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" }
+                    ],
+                    "instructions": [
+                        "Wasche die Zucchini gründlich und schneide sie mithilfe eines Spiralschneiders in Nudeln.",
+                        "Erhitze etwas Olivenöl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate die Zucchininudeln für etwa 2-3 Minuten in der Pfanne, bis sie weich, aber noch bissfest sind.",
+                        "Entferne die Zucchininudeln aus der Pfanne und lege sie auf einem Teller beiseite.",
+                        "Gib die Sonnenblumenkerne, frischen Basilikum, Knoblauch, Zitronensaft, Salz und Pfeffer in einen Mixer oder eine Küchenmaschine.",
+                        "Mixe die Zutaten, während du langsam das Olivenöl hinzugießt, bis eine gleichmäßige Pesto-Konsistenz entsteht.",
+                        "Vermische die Zucchininudeln mit dem Sonnenblumenkern-Pesto, bis sie gleichmäßig bedeckt sind.",
+                        "Serviere die Keto Zucchininudeln mit Pesto aus Sonnenblumenkernen und genieße sie!"
+                    ],
+                    "macroNutrients": { "fett": 15, "kohlenhydrate": 25, "proteine": 10 },
+                    "mealName": "Keto Zucchininudeln mit Pesto aus Sonnenblumenkernen"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Fd2732962-ed24-4cfe-a916-c7ac534103cb.png?alt=media&token=d2732962-ed24-4cfe-a916-c7ac534103cb",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 654, "Menge": "100g", "Zutat": "Walnüsse" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Öl" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 28, "Menge": "2 EL", "Zutat": "Weißweinessig" },
+                        { "Kalorien": 3, "Menge": "1 TL", "Zutat": "Senf" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Pfeffer" },
+                        { "Kalorien": 44, "Menge": "1", "Zutat": "Zwiebel" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und koche sie in kochendem Wasser für etwa 5 Minuten, bis sie zart sind.",
+                        "Gieße den gekochten Blumenkohl ab und lasse ihn abkühlen.",
+                        "Röste die Walnüsse in einer trockenen Pfanne, bis sie leicht gebräunt und duftend sind. Lasse sie dann abkühlen und grob hacken.",
+                        "Erhitze etwas Öl in einer Pfanne und brate die Zwiebelringe goldbraun und knusprig. Lasse sie auf einem Papiertuch abtropfen.",
+                        "Mische den abgekühlten Blumenkohl, die gehackten Walnüsse und die Röstzwiebeln in einer großen Schüssel.",
+                        "Bereite das Dressing zu, indem du Olivenöl, Weißweinessig, Senf, Salz und Pfeffer in einer kleinen Schüssel verrührst.",
+                        "Gieße das Dressing über den Blumenkohl-Walnuss-Salat und vermische alles gut, um die Aromen zu kombinieren.",
+                        "Serviere den Keto Blumenkohl-Walnuss-Salat mit Röstzwiebeln und genieße ihn als leichte und köstliche Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 35, "proteine": 25 },
+                    "mealName": "Keto Blumenkohl-Walnuss-Salat mit Röstzwiebeln"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F45608121-d7e9-4cc7-b74c-83bfb99ae898.png?alt=media&token=45608121-d7e9-4cc7-b74c-83bfb99ae898",
+                    "ingredients": [
+                        { "Kalorien": 320, "Menge": "1 Packung", "Zutat": "Seitan" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Öl" },
+                        { "Kalorien": 50, "Menge": "2", "Zutat": "Paprika" },
+                        { "Kalorien": 40, "Menge": "1", "Zutat": "Zwiebel" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Pfeffer" }
+                    ],
+                    "instructions": [
+                        "Bereite den Seitan vor, indem du ihn in mundgerechte Stücke schneidest.",
+                        "Erhitze etwas Öl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate den Seitan in der Pfanne an, bis er goldbraun und knusprig ist.",
+                        "Nimm den gebratenen Seitan aus der Pfanne und lege ihn beiseite.",
+                        "In derselben Pfanne brate nun die Paprikastreifen und Zwiebelringe an, bis sie weich und leicht gebräunt sind.",
+                        "Gib den gebratenen Seitan zurück in die Pfanne zu den Paprika und Zwiebeln.",
+                        "Würze alles mit Salz, Pfeffer und nach Belieben anderen Gewürzen.",
+                        "Rühre alles gut um und brate es noch für ein paar Minuten, bis alles gut durchgezogen ist. Serviere den gebratenen Seitan mit Paprika und Zwiebeln heiß und genieße dein Gericht!"
+                    ],
+                    "macroNutrients": { "fett": 30, "kohlenhydrate": 20, "proteine": 60 },
+                    "mealName": "Gebratener Seitan mit Paprika und Zwiebeln"
+                }
+            },
+            "Mittwoch": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Fc8afa740-252c-44f6-b9b4-53d88cce272e.png?alt=media&token=c8afa740-252c-44f6-b9b4-53d88cce272e",
+                    "ingredients": [
+                        { "Kalorien": 234, "Menge": "1 Kopf", "Zutat": "Rosenkohl" },
+                        { "Kalorien": 239, "Menge": "2 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Pfeffer" },
+                        { "Kalorien": 144, "Menge": "200g", "Zutat": "Tofu" },
+                        { "Kalorien": 31, "Menge": "1", "Zutat": "Paprika" },
+                        { "Kalorien": 44, "Menge": "1", "Zutat": "Zwiebel" },
+                        { "Kalorien": 14, "Menge": "2 Tassen", "Zutat": "Spinat" },
+                        { "Kalorien": 234, "Menge": "2 EL", "Zutat": "Kokosöl" }
+                    ],
+                    "instructions": [
+                        "Bereite den gerösteten Rosenkohl vor, indem du ihn in kleine Stücke schneidest und auf ein Backblech legst.",
+                        "Beträufle den Rosenkohl mit Olivenöl und würze ihn mit Salz und Pfeffer.",
+                        "Röste den Rosenkohl im vorgeheizten Ofen bei 200 Grad Celsius für etwa 20-25 Minuten, bis er goldbraun und knusprig ist.",
+                        "Während der Rosenkohl im Ofen ist, bereite das Tofu-Omelett zu, indem du den Tofu abtropfst und in einer Schüssel zerbröckelst.",
+                        "Füge gehacktes Gemüse wie Paprika, Zwiebeln und Spinat hinzu und vermische alles gut.",
+                        "Erhitze eine Pfanne mit etwas Kokosöl und gieße die Tofu-Omelett-Mischung hinein.",
+                        "Brate das Tofu-Omelett auf jeder Seite für etwa 3-4 Minuten, bis es goldbraun und fest ist.",
+                        "Serviere das Tofu-Omelett mit dem gerösteten Rosenkohl und genieße deine köstliche Keto-Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 35, "proteine": 25 },
+                    "mealName": "Keto Tofu-Omelett mit geröstetem Rosenkohl"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F6f92c0d9-b671-456c-91af-ac3c0d90bf78.png?alt=media&token=6f92c0d9-b671-456c-91af-ac3c0d90bf78",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Kopf", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 44, "Menge": "1", "Zutat": "Zwiebel" },
+                        { "Kalorien": 13, "Menge": "3", "Zutat": "Knoblauchzehen" },
+                        { "Kalorien": 119, "Menge": "1 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 48, "Menge": "6 Tassen", "Zutat": "Gemüsebrühe" },
+                        { "Kalorien": 654, "Menge": "1 Tasse", "Zutat": "Walnüsse" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und hacke die Zwiebel und den Knoblauch.",
+                        "Erhitze etwas Olivenöl in einem großen Topf und brate die Zwiebel und den Knoblauch glasig an.",
+                        "Füge die Blumenkohlröschen hinzu und brate sie für einige Minuten an, bis sie leicht gebräunt sind.",
+                        "Gieße die Gemüsebrühe in den Topf und lasse die Suppe für etwa 15-20 Minuten köcheln, bis der Blumenkohl weich ist.",
+                        "Während die Suppe kocht, röste die Walnüsse in einer Pfanne ohne Öl, bis sie leicht gebräunt und duftend sind.",
+                        "Nimm die Suppe vom Herd und püriere sie mit einem Stabmixer, bis sie eine cremige Konsistenz hat.",
+                        "Schmecke die Suppe mit Salz und Pfeffer ab und richte sie in Schüsseln an.",
+                        "Garniere die Blumenkohl-Suppe mit den gerösteten Walnüssen und genieße sie als köstliche Keto-Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 30, "kohlenhydrate": 20, "proteine": 60 },
+                    "mealName": "Keto Blumenkohl-Suppe mit gerösteten Walnüssen"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Feeab086c-c705-4e2c-95dc-d768e0862daa.png?alt=media&token=eeab086c-c705-4e2c-95dc-d768e0862daa",
+                    "ingredients": [
+                        { "Kalorien": 33, "Menge": "1", "Zutat": "Zucchini" },
+                        { "Kalorien": 4, "Menge": "1", "Zutat": "Knoblauchzehe" },
+                        { "Kalorien": 20, "Menge": "2 EL", "Zutat": "Sojasauce" },
+                        { "Kalorien": 239, "Menge": "2 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 320, "Menge": "1", "Zutat": "Tempeh" },
+                        { "Kalorien": 120, "Menge": "1 EL", "Zutat": "Öl" }
+                    ],
+                    "instructions": [
+                        "Heize den Ofen auf 200 Grad Celsius vor und lege ein Backblech mit Backpapier aus.",
+                        "Schneide die Zucchini in dünne Scheiben und lege sie auf das vorbereitete Backblech.",
+                        "Bereite die Marinade vor, indem du Knoblauch, Sojasauce, Olivenöl und Gewürze in einer Schüssel vermischst.",
+                        "Gieße die Marinade über die Zucchinischeiben und sorge dafür, dass sie gleichmäßig bedeckt sind.",
+                        "Backe die marinierten Zucchinischeiben im vorgeheizten Ofen für 15-20 Minuten, bis sie goldbraun und knusprig sind.",
+                        "Während die Zucchini im Ofen sind, brate den in Würfel geschnittenen Tempeh in einer Pfanne mit etwas Öl an, bis er goldbraun ist.",
+                        "Nimm die gebackenen Zucchinischeiben aus dem Ofen und serviere sie mit dem angebratenen Knoblauch-Tempeh.",
+                        "Genieße deine gebackenen Zucchini mit Knoblauch-Tempeh als köstliche Beilage oder als Hauptgericht!"
+                    ],
+                    "macroNutrients": { "fett": 25, "kohlenhydrate": 15, "proteine": 35 },
+                    "mealName": "Gebackene Zucchini mit Knoblauch-Tempeh"
+                }
+            },
+            "Donnerstag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Fc914872d-d289-4943-92d2-4e36cfc8240a.png?alt=media&token=c914872d-d289-4943-92d2-4e36cfc8240a",
+                    "ingredients": [
+                        { "Kalorien": 862, "Menge": "etwas", "Zutat": "Kokosöl" },
+                        { "Kalorien": 0, "Menge": "nach Geschmack", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "nach Geschmack", "Zutat": "Pfeffer" },
+                        { "Kalorien": 31, "Menge": "200g", "Zutat": "Paprika" },
+                        { "Kalorien": 20, "Menge": "200g", "Zutat": "Zucchini" },
+                        { "Kalorien": 23, "Menge": "100g", "Zutat": "Spinat" },
+                        { "Kalorien": 654, "Menge": "eine Handvoll", "Zutat": "Walnüsse" },
+                        { "Kalorien": 0, "Menge": "1/4 Tasse", "Zutat": "Kichererbsenmehl" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Schwarzes Salz (Kala Namak)" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Kurkuma" },
+                        { "Kalorien": 0, "Menge": "2 EL", "Zutat": "Wasser" }
+                    ],
+                    "instructions": [
+                        "Erhitze etwas Kokosöl in einer Pfanne bei mittlerer Hitze.",
+                        "Füge gehacktes Gemüse wie Paprika, Zucchini und Spinat hinzu und brate es für ein paar Minuten an, bis das Gemüse weich wird.",
+                        "In einer kleinen Schüssel Kichererbsenmehl, Wasser, Schwarzes Salz und Kurkuma mischen, bis eine glatte Masse entsteht.",
+                        "Gieße die Kichererbsenmehl-Mischung über das angebratene Gemüse in der Pfanne.",
+                        "Rühre die Mischung und das Gemüse vorsichtig um, bis die Mischung gestockt ist und das Gemüse gleichmäßig verteilt ist.",
+                        "Röste die Walnüsse in einer separaten trockenen Pfanne, bis sie leicht gebräunt und duftend sind.",
+                        "Serviere das Keto Gemüse-Rührei auf einem Teller und streue die gerösteten Walnüsse darüber.",
+                        "Genieße dein Keto Gemüse-Rührei mit gerösteten Walnüssen!"
+                    ],
+                    "macroNutrients": { "fett": 50, "kohlenhydrate": 10, "proteine": 40 },
+                    "mealName": "Keto Gemüse-Rührei mit gerösteten Walnüssen"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F2e0fb036-c758-4ea7-906b-ce0f0cb55856.png?alt=media&token=2e0fb036-c758-4ea7-906b-ce0f0cb55856",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 31, "Menge": "1 Paprika", "Zutat": "Paprika" },
+                        { "Kalorien": 320, "Menge": "200g", "Zutat": "gebratener Seitan" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Öl" },
+                        { "Kalorien": 20, "Menge": "2 TL", "Zutat": "Currypulver" },
+                        { "Kalorien": 400, "Menge": "200ml", "Zutat": "Kokosmilch" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und die Paprika in Streifen.",
+                        "Erhitze etwas Öl in einer Pfanne und brate den gebratenen Seitan goldbraun an.",
+                        "Nimm den gebratenen Seitan aus der Pfanne und lege ihn beiseite.",
+                        "Brate die Blumenkohlröschen und Paprikastreifen in derselben Pfanne an, bis sie leicht gebräunt sind.",
+                        "Füge das Currypulver hinzu und rühre es gut um, damit es sein Aroma entfalten kann.",
+                        "Gib den gebratenen Seitan zurück in die Pfanne und vermische ihn mit dem Gemüse.",
+                        "Gieße etwas Kokosmilch in die Pfanne und lasse das Curry für einige Minuten köcheln, bis alles gut durchgezogen ist.",
+                        "Serviere das Keto Blumenkohl-Paprika-Curry mit gebratenem Seitan und genieße es!"
+                    ],
+                    "macroNutrients": { "fett": 30, "kohlenhydrate": 20, "proteine": 60 },
+                    "mealName": "Keto Blumenkohl-Paprika-Curry mit gebratenem Seitan"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F81c06375-0b8f-489e-b8ea-9483039b54bc.png?alt=media&token=81c06375-0b8f-489e-b8ea-9483039b54bc",
+                    "ingredients": [
+                        { "Kalorien": 340, "Menge": "1 Block", "Zutat": "Tofu" },
+                        { "Kalorien": 120, "Menge": "etwas", "Zutat": "Öl" },
+                        { "Kalorien": 88, "Menge": "2", "Zutat": "Zwiebeln" },
+                        { "Kalorien": 13, "Menge": "3", "Zutat": "Knoblauchzehen" },
+                        { "Kalorien": 40, "Menge": "3 EL", "Zutat": "Sojasauce" },
+                        { "Kalorien": 28, "Menge": "2 EL", "Zutat": "Reisessig" },
+                        { "Kalorien": 16, "Menge": "eine Prise", "Zutat": "Zucker" }
+                    ],
+                    "instructions": [
+                        "Schneide den Tofu in Würfel und lege sie auf Küchenpapier, um überschüssige Feuchtigkeit zu entfernen.",
+                        "Erhitze etwas Öl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate die Tofuwürfel in der Pfanne goldbraun an, bis sie knusprig sind.",
+                        "Entferne die gebratenen Tofuwürfel aus der Pfanne und lege sie beiseite.",
+                        "In derselben Pfanne brate fein gehackte Zwiebeln und Knoblauch an, bis sie weich und duftend sind.",
+                        "Gib Sojasauce, Reisessig und eine Prise Zucker in die Pfanne und rühre um, um die Sauce zu vermengen.",
+                        "Gib die gebratenen Tofuwürfel zurück in die Pfanne und koche sie für ein paar Minuten in der Sauce, bis sie gut durchzogen sind.",
+                        "Serviere den gebratenen Tofu mit Zwiebel-Knoblauch-Sauce heiß und genieße dein Gericht!"
+                    ],
+                    "macroNutrients": { "fett": 25, "kohlenhydrate": 30, "proteine": 50 },
+                    "mealName": "Gebratener Tofu mit Zwiebel-Knoblauch-Sauce"
+                }
+            },
+            "Freitag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Ffe18840f-5d69-441f-bfb6-ce8fc7e01229.png?alt=media&token=fe18840f-5d69-441f-bfb6-ce8fc7e01229",
+                    "ingredients": [
+                        { "Kalorien": 33, "Menge": "1 Zucchini", "Zutat": "Zucchini" },
+                        { "Kalorien": 119, "Menge": "1 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 327, "Menge": "50g", "Zutat": "Walnüsse" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" }
+                    ],
+                    "instructions": [
+                        "Wasche die Zucchini gründlich und schneide sie in dünne Scheiben.",
+                        "Erhitze etwas Olivenöl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate die Zucchinischeiben in der Pfanne an, bis sie leicht gebräunt und weich sind.",
+                        "Füge die gerösteten Walnüsse hinzu und brate sie kurz mit den Zucchinischeiben an.",
+                        "Würze die Zucchinipfanne mit Salz, Pfeffer und nach Belieben anderen Gewürzen.",
+                        "Rühre alles gut um und lasse die Aromen vereinen.",
+                        "Nimm die Zucchinipfanne vom Herd und richte sie auf einem Teller an.",
+                        "Genieße deine Keto Zucchinipfanne mit gerösteten Walnüssen!"
+                    ],
+                    "macroNutrients": { "fett": 20, "kohlenhydrate": 5, "proteine": 10 },
+                    "mealName": "Keto Zucchinipfanne mit gerösteten Walnüssen"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Fc9192e4f-8f5f-4961-901d-41c3656b3fbb.png?alt=media&token=c9192e4f-8f5f-4961-901d-41c3656b3fbb",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 320, "Menge": "200g", "Zutat": "Tempeh" },
+                        { "Kalorien": 120, "Menge": "1 EL", "Zutat": "Öl" },
+                        { "Kalorien": 23, "Menge": "100g", "Zutat": "Spinat" },
+                        { "Kalorien": 44, "Menge": "1 Zwiebel", "Zutat": "Zwiebel" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 17, "Menge": "1", "Zutat": "Zitronensaft" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" },
+                        { "Kalorien": 240, "Menge": "1", "Zutat": "Avocado" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und den Tempeh in Würfel.",
+                        "Erhitze etwas Öl in einer Pfanne und brate den Tempeh goldbraun an.",
+                        "Entferne den Tempeh aus der Pfanne und brate die Blumenkohlröschen in derselben Pfanne an, bis sie leicht gebräunt sind.",
+                        "Bereite eine Schüssel mit frischem Spinat vor und lege die gebratenen Blumenkohlröschen und Tempeh darauf.",
+                        "Röste einige Zwiebelringe in der Pfanne, bis sie knusprig sind, und lege sie dann auf die Bowl.",
+                        "Bereite eine Keto-freundliche Sauce aus Olivenöl, Zitronensaft, Salz und Pfeffer zu und beträufle sie über die Bowl.",
+                        "Optional kannst du die Bowl mit frischen Kräutern oder Avocado garnieren.",
+                        "Genieße deine Keto Blumenkohl-Tempeh-Bowl mit Röstzwiebeln!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 30, "proteine": 50 },
+                    "mealName": "Keto Blumenkohl-Tempeh-Bowl mit Röstzwiebeln"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2Fc16df2e1-1e6e-489e-b893-eddc48ebc27a.png?alt=media&token=c16df2e1-1e6e-489e-b893-eddc48ebc27a",
+                    "ingredients": [
+                        { "Kalorien": 320, "Menge": "1 Stück", "Zutat": "Seitan" },
+                        { "Kalorien": 6, "Menge": "1 TL", "Zutat": "Paprikapulver" },
+                        { "Kalorien": 5, "Menge": "1 TL", "Zutat": "Knoblauchpulver" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" },
+                        { "Kalorien": 120, "Menge": "1 EL", "Zutat": "Öl" }
+                    ],
+                    "instructions": [
+                        "Bereite den Seitan vor und schneide ihn in gleichmäßige Stücke.",
+                        "Mische in einer Schüssel Paprikapulver, Knoblauchpulver, Salz und Pfeffer.",
+                        "Wälze die Seitanstücke in der Gewürzmischung, bis sie gleichmäßig bedeckt sind.",
+                        "Erhitze Öl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate den marinierten Seitan in der Pfanne an, bis er goldbraun und knusprig ist.",
+                        "Lege den gebackenen Seitan auf ein mit Backpapier ausgelegtes Backblech.",
+                        "Backe den Seitan im vorgeheizten Ofen bei 180°C für 15-20 Minuten, bis er knusprig ist.",
+                        "Nimm den gebackenen Seitan aus dem Ofen und serviere ihn heiß mit deiner Lieblingsbeilage. Guten Appetit!"
+                    ],
+                    "macroNutrients": { "fett": 15, "kohlenhydrate": 10, "proteine": 25 },
+                    "mealName": "Gebackener Seitan mit Paprika und Knoblauch"
+                }
+            },
+            "Samstag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F8c098616-cb4a-4e85-803b-fb8ee5f65a14.png?alt=media&token=8c098616-cb4a-4e85-803b-fb8ee5f65a14",
+                    "ingredients": [
+                        { "Kalorien": 55, "Menge": "1", "Zutat": "Brokkoli" },
+                        { "Kalorien": 119, "Menge": "1 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" },
+                        { "Kalorien": 144, "Menge": "200g", "Zutat": "Tofu" },
+                        { "Kalorien": 8, "Menge": "2 EL", "Zutat": "Zitronensaft" },
+                        { "Kalorien": 4, "Menge": "1 Zehe", "Zutat": "Knoblauch" }
+                    ],
+                    "instructions": [
+                        "Heize den Ofen auf 200 Grad Celsius vor und lege den Brokkoli auf ein Backblech.",
+                        "Beträufle den Brokkoli mit Olivenöl und würze ihn mit Salz und Pfeffer.",
+                        "Röste den Brokkoli im vorgeheizten Ofen für etwa 20 Minuten oder bis er goldbraun und knusprig ist.",
+                        "Während der Brokkoli im Ofen ist, würfle den Tofu und brate ihn in einer Pfanne mit etwas Öl knusprig an.",
+                        "Bereite das Dressing vor, indem du Olivenöl, Zitronensaft, gehackten Knoblauch, Salz und Pfeffer in einer kleinen Schüssel vermischst.",
+                        "Gib den gerösteten Brokkoli und den angebratenen Tofu in eine große Schüssel und gieße das Dressing darüber.",
+                        "Vermische alles vorsichtig, um die Zutaten zu kombinieren und das Dressing gleichmäßig zu verteilen.",
+                        "Serviere den Keto Tofu-Salat mit geröstetem Brokkoli und genieße ihn als leichte und gesunde Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 15, "kohlenhydrate": 10, "proteine": 25 },
+                    "mealName": "Keto Tofu-Salat mit geröstetem Brokkoli"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F743a5f46-2e46-44e1-be0f-502f2991e7af.png?alt=media&token=743a5f46-2e46-44e1-be0f-502f2991e7af",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 320, "Menge": "200g", "Zutat": "Tempeh" },
+                        { "Kalorien": 234, "Menge": "2 EL", "Zutat": "Kokosöl" },
+                        { "Kalorien": 383, "Menge": "1/2 Tasse", "Zutat": "Walnüsse" },
+                        { "Kalorien": 13, "Menge": "3 Knoblauchzehen", "Zutat": "Knoblauch" },
+                        { "Kalorien": 6, "Menge": "1 Stück (2cm)", "Zutat": "Ingwer" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1", "Zutat": "Pfeffer" },
+                        { "Kalorien": 8, "Menge": "nach Belieben", "Zutat": "Sojasauce" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und den Tempeh in Würfel.",
+                        "Erhitze etwas Kokosöl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate den Tempeh in der Pfanne goldbraun an und nimm ihn dann aus der Pfanne.",
+                        "Gib den Blumenkohl in die Pfanne und brate ihn für etwa 5-7 Minuten, bis er leicht gebräunt ist.",
+                        "Füge gehackte Walnüsse, Knoblauch und Ingwer hinzu und brate alles für weitere 2-3 Minuten.",
+                        "Gib den gebratenen Tempeh zurück in die Pfanne und vermische alles gut.",
+                        "Würze die Pfanne mit Salz, Pfeffer und nach Belieben etwas Sojasauce.",
+                        "Serviere die Keto Blumenkohl-Walnuss-Pfanne mit gebratenem Tempeh heiß und genieße dein köstliches Gericht!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 30, "proteine": 50 },
+                    "mealName": "Keto Blumenkohl-Walnuss-Pfanne mit gebratenem Tempeh"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F21ff1cd8-9999-493e-b522-67d652d74de3.png?alt=media&token=21ff1cd8-9999-493e-b522-67d652d74de3",
+                    "ingredients": [
+                        { "Kalorien": 144, "Menge": "200g", "Zutat": "Tofu" },
+                        { "Kalorien": 66, "Menge": "2", "Zutat": "Zucchini" },
+                        { "Kalorien": 4, "Menge": "1 Knoblauchzehe", "Zutat": "Knoblauch" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" },
+                        { "Kalorien": 1, "Menge": "nach Belieben", "Zutat": "Paprika oder Chili" }
+                    ],
+                    "instructions": [
+                        "Schneide den Tofu in Würfel und die Zucchini in dünne Scheiben.",
+                        "Erhitze etwas Öl in einer Pfanne bei mittlerer Hitze.",
+                        "Brate die Tofuwürfel in der Pfanne goldbraun an und nimm sie dann heraus.",
+                        "Gib etwas mehr Öl in die Pfanne und brate die Zucchinischeiben zusammen mit gehacktem Knoblauch an, bis sie weich sind.",
+                        "Füge die gebratenen Tofuwürfel wieder in die Pfanne und vermische sie mit den Zucchinischeiben.",
+                        "Würze alles mit Salz, Pfeffer und nach Belieben anderen Gewürzen wie Paprika oder Chili.",
+                        "Brate alles noch für ein paar Minuten, bis der Tofu und die Zucchini gut durchgebraten sind.",
+                        "Richte die gebratenen Zucchini mit Knoblauch-Tofu auf einem Teller an und genieße deine Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 10, "kohlenhydrate": 5, "proteine": 15 },
+                    "mealName": "Gebratene Zucchini mit Knoblauch-Tofu"
+                }
+            },
+            "Sonntag": {
+                "Mahlzeit_1": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F8cefd05e-90c9-41dc-a7b0-0b422ab04daa.png?alt=media&token=8cefd05e-90c9-41dc-a7b0-0b422ab04daa",
+                    "ingredients": [
+                        { "Kalorien": 862, "Menge": "etwas", "Zutat": "Kokosöl" },
+                        { "Kalorien": 31, "Menge": "1", "Zutat": "Paprika" },
+                        { "Kalorien": 20, "Menge": "1", "Zutat": "Zucchini" },
+                        { "Kalorien": 23, "Menge": "1", "Zutat": "Spinat" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Salz" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Pfeffer" },
+                        { "Kalorien": 654, "Menge": "etwas", "Zutat": "Walnüsse" },
+                        { "Kalorien": 0, "Menge": "1/4 Tasse", "Zutat": "Kichererbsenmehl" },
+                        { "Kalorien": 0, "Menge": "1 Prise", "Zutat": "Schwarzes Salz (Kala Namak)" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Kurkuma" },
+                        { "Kalorien": 0, "Menge": "2 EL", "Zutat": "Wasser" }
+                    ],
+                    "instructions": [
+                        "Erhitze eine Pfanne bei mittlerer Hitze und gib etwas Kokosöl hinzu.",
+                        "Schneide Paprika, Zucchini und Spinat in kleine Stücke und brate sie in der Pfanne an, bis sie weich sind.",
+                        "In einer separaten Schüssel Kichererbsenmehl, Wasser, Schwarzes Salz und Kurkuma mischen, bis eine glatte Masse entsteht.",
+                        "Gieße die Kichererbsenmehl-Mischung über das angebratene Gemüse in der Pfanne.",
+                        "Lasse das Omelett langsam stocken, indem du es bei niedriger Hitze brätst.",
+                        "Wende das Omelett vorsichtig, um es auf der anderen Seite zu bräunen.",
+                        "Röste die Walnüsse in einer trockenen Pfanne, bis sie duften, und streue sie über das Omelett.",
+                        "Serviere das Keto Gemüseomelett mit gerösteten Walnüssen und genieße deine Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 40, "kohlenhydrate": 10, "proteine": 50 },
+                    "mealName": "Keto Gemüseomelett mit gerösteten Walnüssen"
+                },
+                "Mahlzeit_2": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F940c9ec7-1bc4-42a1-a63a-6af602371ce8.png?alt=media&token=940c9ec7-1bc4-42a1-a63a-6af602371ce8",
+                    "ingredients": [
+                        { "Kalorien": 210, "Menge": "1 Blumenkohl", "Zutat": "Blumenkohl" },
+                        { "Kalorien": 320, "Menge": "200g", "Zutat": "Zitronen-Tempeh" },
+                        { "Kalorien": 12, "Menge": "1/4 Tasse", "Zutat": "Zitronensaft" },
+                        { "Kalorien": 480, "Menge": "1/4 Tasse", "Zutat": "Olivenöl" },
+                        { "Kalorien": 8, "Menge": "2 Knoblauchzehen", "Zutat": "Knoblauch" },
+                        { "Kalorien": 0, "Menge": "1 TL", "Zutat": "Salz" },
+                        { "Kalorien": 3, "Menge": "1/2 TL", "Zutat": "Pfeffer" },
+                        { "Kalorien": 5, "Menge": "nach Geschmack", "Zutat": "Frische Kräuter (Petersilie oder Koriander)" }
+                    ],
+                    "instructions": [
+                        "Schneide den Blumenkohl in kleine Röschen und koche sie für 2-3 Minuten in kochendem Wasser, bis sie leicht weich sind.",
+                        "Gieße den gekochten Blumenkohl in ein Sieb und spüle ihn mit kaltem Wasser ab, um den Garprozess zu stoppen.",
+                        "Erhitze etwas Öl in einer Pfanne und brate die in Würfel geschnittene Zitronen-Tempeh für 5-7 Minuten, bis er goldbraun und knusprig ist.",
+                        "Bereite das Dressing zu, indem du Zitronensaft, Olivenöl, gehackten Knoblauch, Salz und Pfeffer in einer kleinen Schüssel vermischst.",
+                        "Gib den gekochten Blumenkohl und den gebratenen Zitronen-Tempeh in eine große Schüssel.",
+                        "Gieße das Dressing über den Blumenkohl und den Zitronen-Tempeh und vermische alles vorsichtig, um die Zutaten zu kombinieren.",
+                        "Streue frisch gehackte Kräuter wie Petersilie oder Koriander über den Blumenkohl-Salat mit Zitronen-Tempeh.",
+                        "Serviere den Keto Blumenkohl-Salat mit Zitronen-Tempeh als leichte und köstliche Mahlzeit!"
+                    ],
+                    "macroNutrients": { "fett": 30, "kohlenhydrate": 20, "proteine": 60 },
+                    "mealName": "Keto Blumenkohl-Salat mit Zitronen-Tempeh"
+                },
+                "Mahlzeit_3": {
+                    "image": "https://firebasestorage.googleapis.com/v0/b/ketosecond.appspot.com/o/mealImages%2F66146a72-15b3-4f46-8546-7fdfe1732ab0.png?alt=media&token=66146a72-15b3-4f46-8546-7fdfe1732ab0",
+                    "ingredients": [
+                        { "Kalorien": 120, "Menge": "1 Stück", "Zutat": "Seitan" },
+                        { "Kalorien": 240, "Menge": "2 EL", "Zutat": "Olivenöl" },
+                        { "Kalorien": 20, "Menge": "2 EL", "Zutat": "Sojasauce" },
+                        { "Kalorien": 10, "Menge": "1 TL", "Zutat": "Knoblauchpulver" },
+                        { "Kalorien": 20, "Menge": "1 TL", "Zutat": "Paprikapulver" },
+                        { "Kalorien": 30, "Menge": "1 Stück", "Zutat": "Paprika" },
+                        { "Kalorien": 40, "Menge": "1 Stück", "Zutat": "Zwiebel" }
+                    ],
+                    "instructions": [
+                        "Bereite den Seitan vor und schneide ihn in gleichmäßige Stücke.",
+                        "Mische in einer Schüssel Olivenöl, Sojasauce, Knoblauchpulver und Paprikapulver.",
+                        "Gib die Seitanstücke in die Schüssel und wende sie gut in der Marinade.",
+                        "Lasse den marinierten Seitan für etwa 30 Minuten ziehen, damit er den Geschmack aufnimmt.",
+                        "Heize den Ofen auf 200 Grad Celsius vor und lege die marinierten Seitanstücke auf ein Backblech.",
+                        "Schneide Paprika und Zwiebeln in Streifen und lege sie um den Seitan auf dem Backblech.",
+                        "Backe den Seitan mit Paprika und Zwiebeln für 20-25 Minuten, bis er goldbraun und knusprig ist.",
+                        "Nimm den gebackenen Seitan aus dem Ofen und serviere ihn heiß. Guten Appetit!"
+                    ],
+                    "macroNutrients": { "fett": 30, "kohlenhydrate": 20, "proteine": 60 },
+                    "mealName": "Gebackener Seitan mit Paprika und Zwiebeln"
+                }
+            }
+        };
+
+        function createMealCard(meal) {
+            return `
+                <div class="meal-card">
+                    <img src="${meal.image}" alt="${meal.mealName}" class="meal-image">
+                    <div class="meal-content">
+                        <h3 class="meal-title">${meal.mealName}</h3>
+                        <div class="macro-nutrients">
+                            <div class="macro-nutrient">
+                                <div class="macro-value">${meal.macroNutrients.fett}</div>
+                                <div>Fett</div>
+                            </div>
+                            <div class="macro-nutrient">
+                                <div class="macro-value">${meal.macroNutrients.kohlenhydrate}</div>
+                                <div>Kohlenhydrate</div>
+                            </div>
+                            <div class="macro-nutrient">
+                                <div class="macro-value">${meal.macroNutrients.proteine}</div>
+                                <div>Proteine</div>
+                            </div>
+                        </div>
+                        <button class="toggle-details">Zutaten und Anleitung anzeigen</button>
+                        <div class="meal-details">
+                            <h4>Zutaten:</h4>
+                            <ul class="ingredients-list">
+                                ${meal.ingredients.map(ingredient => `<li>${ingredient.Zutat} (${ingredient.Menge})</li>`).join('')}
+                            </ul>
+                            <h4>Anleitung:</h4>
+                            <ol class="instructions-list">
+                                ${meal.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.querySelectorAll('.toggle-details').forEach(button => {
+            button.addEventListener('click', () => {
+                const details = button.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+                button.textContent = details.style.display === 'block' ? 'Zutaten und Anleitung ausblenden' : 'Zutaten und Anleitung anzeigen';
+            });
+        });
+
+        document.querySelectorAll('.day-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.day-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const day = button.getAttribute('data-day');
+                const meals = mealData[day];
+                const mealContainer = document.getElementById('meal-container');
+                mealContainer.innerHTML = '';
+                Object.values(meals).forEach(meal => {
+                    mealContainer.innerHTML += createMealCard(meal);
+                });
+
+                document.querySelectorAll('.toggle-details').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const details = button.nextElementSibling;
+                        details.style.display = details.style.display === 'block' ? 'none' : 'block';
+                        button.textContent = details.style.display === 'block' ? 'Zutaten und Anleitung ausblenden' : 'Zutaten und Anleitung anzeigen';
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
